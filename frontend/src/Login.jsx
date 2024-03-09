@@ -9,6 +9,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { InputLogin } from './components/inputLogin';
+import { Link } from 'react-router-dom';
 import { uem } from './assets/images';
 import '@fontsource/poppins/300.css';
 import '@fontsource/poppins/400.css';
@@ -63,6 +64,23 @@ export function Login() {
             >
               Entrar
             </Button>
+
+            <Text
+              fontSize="14px"
+              width="100vh"
+              m={-5}
+              color="grey"
+              textAlign="center"
+              fontWeight={500}
+            >
+              Não tem uma conta?{' '}
+              <Link
+                to="/Cadastro"
+                style={{ fontWeight: 'bold', textDecoration: 'underline' }}
+              >
+                Cadastre-se.
+              </Link>
+            </Text>
           </Stack>
         </VStack>
       </Box>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@chakra-ui/react';
 import { Box } from '@chakra-ui/react';
 import { Input, InputGroup, InputRightElement } from '@chakra-ui/react';
@@ -15,6 +15,16 @@ export function InputLogin(props) {
   let fontColor = props.fontColor || 'black';
   let size = props.size || 'lg';
   let password = props.password || false;
+  let notShow = props.notShow || false;
+
+  useEffect(() => {
+    if (!password) {
+      setShow(true);
+    }
+    if (notShow) {
+      setShow(false);
+    }
+  });
 
   return (
     <Box position="relative" w="100%">
@@ -23,6 +33,9 @@ export function InputLogin(props) {
           borderColor={bdColor}
           size={size}
           type={show ? 'text' : 'password'}
+          value={props.value}
+          onInput={props.onInput}
+          isInvalid={props.isInvalid}
         />
         {password ? (
           <InputRightElement mt={1} mr="1">

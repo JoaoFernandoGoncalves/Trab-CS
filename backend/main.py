@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, status, Depends
 from pydantic import BaseModel
 from typing import Annotated
+import sqlalchemy
 import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
@@ -132,19 +133,30 @@ async def delete_user(user_id: int, db: db_dependency):
 
 @app.post("/usuario", status_code=status.HTTP_201_CREATED)
 async def create_user(user: UsuarioBase, db: db_dependency):
-    if not is_uem_email(user.email) and not is_valid_cpf(user.cpf):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="E-mail uem inválido")
+    # if not is_uem_email(user.email) and not is_valid_cpf(user.cpf):
+    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email UEM inválido")
+    if (user.nome == '' or user.email == '' or user.senha == '' or user.cpf == ''):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Campos não preenchidos")
     
     if not is_valid_email(user.email):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email inválido")
     
-    if  not is_valid_cpf(user.cpf):
-         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CPF inválido")
+    if not is_valid_cpf(user.cpf):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CPF inválido")
     else:
-
-        db_user = models.Usuario(**user.model_dump())
-        db.add(db_user)
-        db.commit()
+        try:
+            db_user = models.Usuario(**user.model_dump())
+            db.add(db_user)
+            db.commit()
+        except sqlalchemy.exc.IntegrityError as e:
+            if 'nome' in str(e.orig):
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Usuário já cadastrado")
+            elif 'email' in str(e.orig):
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email já cadastrado")
+            elif 'cpf' in str(e.orig):
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="CPF já cadastrado")
+            else:
+                raise
 
 @app.get("/usuario_id/{user_id}", status_code=status.HTTP_200_OK)
 async def read_user(user_id: int, db: db_dependency):
@@ -156,6 +168,13 @@ async def read_user(user_id: int, db: db_dependency):
 @app.get("/usuario_email/{user_email}", status_code=status.HTTP_200_OK)
 async def read_user(user_email: str, db: db_dependency):
   user = db.query(models.Usuario).filter(models.Usuario.email == user_email).first()
+  if user is None:
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+  return user
+
+@app.get("/usuario_cpf/{user_cpf}", status_code=status.HTTP_200_OK)
+async def read_user(user_cpf: str, db: db_dependency):
+  user = db.query(models.Usuario).filter(models.Usuario.cpf == user_cpf).first()
   if user is None:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
   return user
