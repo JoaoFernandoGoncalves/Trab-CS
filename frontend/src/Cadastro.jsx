@@ -11,7 +11,7 @@ import {
 import { useState } from 'react';
 import { InputLogin } from './components/inputLogin';
 import { uem } from './assets/images';
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import api from './api';
 import '@fontsource/poppins/300.css';
 import '@fontsource/poppins/400.css';
@@ -27,6 +27,7 @@ export function Cadastro() {
   const [email, setEmail] = useState('');
   const [erro, setErro] = useState('');
   const [invalidFields, setInvalidFields] = useState({});
+  const navigate = useNavigate();
 
   const handleClick = () => {
     setErro('');
@@ -57,7 +58,7 @@ export function Cadastro() {
       })
       .then((response) => {
         if (response.status === 201) {
-          alert('Usuário cadastrado com sucesso');
+          navigate('/');
         }
       })
       .catch((error) => {
