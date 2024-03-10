@@ -8,7 +8,7 @@ const routes = [
     element: <Login />,
   },
   {
-    path: '/Cadastro',
+    path: '/cadastro',
     element: <Cadastro />,
   },
   {

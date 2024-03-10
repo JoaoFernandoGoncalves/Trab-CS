@@ -11,7 +11,7 @@ import {
 import { useState } from 'react';
 import { InputLogin } from './components/inputLogin';
 import { uem } from './assets/images';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from './api';
 import '@fontsource/poppins/300.css';
 import '@fontsource/poppins/400.css';
@@ -153,7 +153,7 @@ export function Cadastro() {
               fontSize="14px"
               width="100vh"
               m={-5}
-              color={'rgba(222,41,52,1)'}
+              color={'red.400'}
               textAlign="center"
               fontWeight={800}
             >
@@ -195,8 +195,17 @@ export function Cadastro() {
           </Stack>
         </VStack>
       </Box>
-      <Box bg="red.700" height="100%">
-        <Image src={uem} alt="UEM" objectFit="cover" height="100vh" />
+      <Box
+        bg="linear-gradient(180deg, rgba(222,41,52,1) 50%, rgba(255,148,148,1) 100%)"
+        height="100%"
+      >
+        <Image
+          src={uem}
+          alt="UEM"
+          objectFit="cover"
+          height="100vh"
+          paddingLeft="1%"
+        />
       </Box>
     </SimpleGrid>
   );

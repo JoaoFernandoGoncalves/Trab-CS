@@ -36,6 +36,7 @@ export function InputLogin(props) {
           value={props.value}
           onInput={props.onInput}
           isInvalid={props.isInvalid}
+          errorBorderColor="red.400"
         />
         {password ? (
           <InputRightElement mt={1} mr="1">
