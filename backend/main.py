@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 import os
@@ -40,6 +40,22 @@ class UsuarioBase(BaseModel):
 class AdminBase(BaseModel):
   nome: str
   senha: str
+
+class CardapioBase(BaseModel):
+    dia_semana: str
+    data: date
+    refeicao: str
+    opcao1: str
+    opcao2: str
+    opcao3: str
+    opcao4: str
+    opcao5: str
+
+class CardapioCreate(CardapioBase):
+    pass
+
+class CardapioUpdate(CardapioBase):
+    pass
 
 class TokenPayload(BaseModel):
     sub: Optional[int] = None
@@ -341,6 +357,40 @@ async def alterar_valor_ticket(novo_valor: float, db: Session = Depends(get_db))
         db.rollback()  # Reverta as alterações no banco de dados em caso de exceção
         raise e
     
+@app.post("/cardapio", response_model=CardapioBase)
+def create_item_in_menu(item: CardapioCreate, db: Session = Depends(get_db)):
+    db_item = models.Cardapio(**item.model_dump())
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
 
-# Registrar o roteador no aplicativo FastAPI
+@app.put("/cardapio/{item_id}", response_model=CardapioBase)
+def update_item_in_menu(item_id: int, item: CardapioUpdate, db: Session = Depends(get_db)):
+    db_item = db.query(models.Cardapio).filter(models.Cardapio.id == item_id).first()
+    if db_item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    # Verificar quais campos foram alterados e atualizar apenas eles
+    if item.dia_semana != "string":
+        db_item.dia_semana = item.dia_semana
+    if item.data and item.data != str(date.today()):
+        db_item.data = item.data
+    if item.refeicao != "string":
+        db_item.refeicao = item.refeicao
+    if item.opcao1 != "string":
+        db_item.opcao1 = item.opcao1
+    if item.opcao2 != "string":
+        db_item.opcao2 = item.opcao2
+    if item.opcao3 != "string":
+        db_item.opcao3 = item.opcao3
+    if item.opcao4 != "string":
+        db_item.opcao4 = item.opcao4
+    if item.opcao5 != "string":
+        db_item.opcao5 = item.opcao5
+    
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
 app.include_router(router)
