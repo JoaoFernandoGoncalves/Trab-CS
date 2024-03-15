@@ -8,7 +8,7 @@ import {
   Center,
   VStack,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { InputLogin } from './components/inputLogin';
 import { uem } from './assets/images';
 import { Link, useNavigate } from 'react-router-dom';
@@ -26,32 +26,25 @@ export function Login() {
   const [invalid, setInvalid] = useState(false);
   const navigate = useNavigate();
 
-  const validateEmail = (email) => {
-    return String(email)
-      .toLowerCase()
-      .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      );
-  };
+  useEffect(() => {
+    if (sessionStorage.getItem('access_token')) {
+      navigate('/cardapio');
+    }
+  }, []);
 
   const handleClick = () => {
-    let getStr = `/usuario_nome/${user}`;
-    if (validateEmail(user)) {
-      getStr = `/usuario_email/${user}`;
-    }
-
+    const formData = new FormData();
+    formData.append('username', user);
+    formData.append('password', password);
     api
-      .get(getStr)
+      .post('/login', formData)
       .then((response) => {
         if (response.status === 200) {
-          if (response.data.senha === password) navigate('/home');
-          else {
-            setErro('Credênciais inválidas');
-            setInvalid(true);
-          }
+          sessionStorage.setItem('access_token', response.data.access_token);
+          navigate('/cardapio');
         }
       })
-      .catch((error) => {
+      .catch(() => {
         setErro('Credênciais inválidas');
         setInvalid(true);
       });

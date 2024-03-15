@@ -1,6 +1,10 @@
-from fastapi import FastAPI, HTTPException, status, Depends
-from pydantic import BaseModel
-from typing import Annotated
+from datetime import datetime, timedelta
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt
+import os
+from fastapi import FastAPI, Form, HTTPException, status, Depends
+from pydantic import BaseModel, ValidationError
+from typing import Annotated, Any, Optional, Union
 import sqlalchemy
 import models
 from database import engine, SessionLocal
@@ -25,6 +29,7 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
+
 class UsuarioBase(BaseModel):
   nome: str
   email: str
@@ -36,6 +41,9 @@ class AdminBase(BaseModel):
   nome: str
   senha: str
 
+class TokenPayload(BaseModel):
+    sub: Optional[int] = None
+
 def get_db():
   db = SessionLocal()
   try:
@@ -43,7 +51,42 @@ def get_db():
   finally:
     db.close()
 
+reusable_oauth2 = OAuth2PasswordBearer(
+    tokenUrl="/login"
+)
+
 db_dependency = Annotated[Session, Depends(get_db)]
+
+SECRET_KEY = os.getenv('k1Wn@`Ou9I#3', 'SECRET_KEY')
+JWT_ALGORITHM = os.getenv('JWT_ALGORITHM', 'HS512')
+ACCESS_TOKEN_EXPIRE_HOURS = 24
+
+async def get_usuario_logado(
+    token: str,
+    db: Session = Depends(get_db)
+) -> models.Usuario:
+    try:
+        payload = jwt.decode(
+            token, SECRET_KEY, algorithms=[JWT_ALGORITHM]
+        )
+        token_data = TokenPayload(**payload)
+    except (jwt.JWTError, ValidationError):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
+    user = db.query(models.Usuario).filter(models.Usuario.id == token_data.sub).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+def criar_token_jwt(subject: Union[str, Any]) -> str:
+    expire = datetime.utcnow() + timedelta(
+        hours=ACCESS_TOKEN_EXPIRE_HOURS
+    )
+    to_encode = {"exp": expire, "sub": str(subject)}
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm="HS512")
+    return encoded_jwt
 
 def is_valid_email(email):
     try:
@@ -123,7 +166,7 @@ async def update_user(user_id: int, user_data: UsuarioBase, db: Session = Depend
 
 # Endpoint para deletar um usuário pelo ID
 @app.delete("/usuario/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(user_id: int, db: db_dependency):
+async def delete_user(user_id: int, db: Session = Depends(get_db)):
     db_user = db.query(models.Usuario).filter(models.Usuario.id == user_id).first()
     if db_user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -133,8 +176,6 @@ async def delete_user(user_id: int, db: db_dependency):
 
 @app.post("/usuario", status_code=status.HTTP_201_CREATED)
 async def create_user(user: UsuarioBase, db: db_dependency):
-    # if not is_uem_email(user.email) and not is_valid_cpf(user.cpf):
-    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email UEM inválido")
     if (user.nome == '' or user.email == '' or user.senha == '' or user.cpf == ''):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Campos não preenchidos")
     
@@ -222,6 +263,30 @@ class CompraTicket(BaseModel):
 
 router = APIRouter()
 
+@router.get("/user/loggedin/{token}", status_code=status.HTTP_200_OK)
+async def get_logged_in_user(
+    token: str,
+    db: Session = Depends(get_db)
+):
+    return await get_usuario_logado(token, db)
+
+@router.post("/login", status_code=status.HTTP_200_OK)
+async def login(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+    try:
+        user = None
+        if is_valid_email(username):
+            user = db.query(models.Usuario).filter(models.Usuario.email == username).first()
+        else:
+            user = db.query(models.Usuario).filter(models.Usuario.nome == username).first()
+        if not user or user.senha != password:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email ou nome de usuário incorretos")
+        return {
+            "access_token": criar_token_jwt(user.id),
+            "token_type": "bearer",
+        }
+    except Exception as e:
+        raise e
+
 @router.post("/compra-ticket", status_code=status.HTTP_201_CREATED)
 async def compra_ticket(compra: CompraTicket, db: Session = Depends(get_db)):
     try:
@@ -275,6 +340,7 @@ async def alterar_valor_ticket(novo_valor: float, db: Session = Depends(get_db))
     except Exception as e:
         db.rollback()  # Reverta as alterações no banco de dados em caso de exceção
         raise e
+    
 
 # Registrar o roteador no aplicativo FastAPI
 app.include_router(router)

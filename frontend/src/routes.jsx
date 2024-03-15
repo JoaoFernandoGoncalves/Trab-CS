@@ -1,6 +1,6 @@
-import { Layout } from './components/Layout';
 import { Login } from './Login';
 import { Cadastro } from './Cadastro';
+import { Cardapio } from './Cardapio';
 
 const routes = [
   {
@@ -12,8 +12,8 @@ const routes = [
     element: <Cadastro />,
   },
   {
-    path: '/app',
-    element: <Layout />,
+    path: '/cardapio',
+    element: <Cardapio />,
   },
 ];
 
