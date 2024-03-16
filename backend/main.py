@@ -393,4 +393,11 @@ def update_item_in_menu(item_id: int, item: CardapioUpdate, db: Session = Depend
     db.refresh(db_item)
     return db_item
 
+@app.get("/cardapio/{dia_semana}", status_code=status.HTTP_200_OK)
+def read_menu_item(dia_semana: str, db: Session = Depends(get_db)):
+    item = db.query(models.Cardapio).filter(models.Cardapio.dia_semana == dia_semana).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
 app.include_router(router)

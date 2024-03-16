@@ -5,7 +5,6 @@ import {
   SimpleGrid,
   Image,
   Text,
-  Center,
   VStack,
 } from '@chakra-ui/react';
 import { useState } from 'react';

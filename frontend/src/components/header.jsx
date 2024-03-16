@@ -1,4 +1,4 @@
-import { GridItem, SimpleGrid } from '@chakra-ui/react';
+import { GridItem, SimpleGrid, Button } from '@chakra-ui/react';
 import { BotaoBonito } from './BotaoBonito';
 
 export function Header(props) {
@@ -6,7 +6,7 @@ export function Header(props) {
   let tickets = props.tickets || 'white';
   let minhaConta = props.minhaConta || 'white';
   return (
-    <GridItem area={'header'} bg="white" h="65px" borderRadius="5px">
+    <GridItem area={'header'} bg="white" h="65px">
       <SimpleGrid
         display="flex"
         alignItems="center"

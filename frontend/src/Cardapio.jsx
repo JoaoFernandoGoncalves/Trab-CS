@@ -1,8 +1,7 @@
-import { Box, Text, VStack, Grid, GridItem, Image } from '@chakra-ui/react';
+import { Text, VStack, Grid, GridItem, Image } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from './api';
-import { userIcon, mapa } from './assets/images';
 import '@fontsource/poppins/300.css';
 import '@fontsource/poppins/400.css';
 import '@fontsource/poppins/500.css';
@@ -10,130 +9,134 @@ import '@fontsource/poppins/600.css';
 import '@fontsource/poppins/700.css';
 import { Header } from './components/header';
 import { CardapioDia } from './components/cardapioDia';
+import { Nav } from './components/nav';
+import { comidas } from './assets/images';
 
 export function Cardapio() {
+  const dias = ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA'];
   const navigate = useNavigate();
-  const [username, setUsername] = useState('Usuário não logado');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [cardapio, setCardapio] = useState([]);
+  // const [drawDias, setDrawDias] = useState([]);
+  const [isFetched, setIsFetched] = useState(false);
 
   useEffect(() => {
     // if (!sessionStorage.getItem('access_token')) {
     //   navigate('/');
     // }
-    api
-      .get('/user/loggedin/' + sessionStorage.getItem('access_token'))
-      .then((response) => {
-        if (response.status == 200) {
-          setUsername(response.data.nome);
-          setEmail(response.data.email);
-        }
-      });
+    let promises = [];
+
+    promises.push(
+      api
+        .get('/user/loggedin/' + sessionStorage.getItem('access_token'))
+        .then((response) => {
+          if (response.status == 200) {
+            setUsername(response.data.nome);
+            setEmail(response.data.email);
+          }
+        })
+        .catch((error) => {})
+    );
+
+    for (let i = 0; i < 5; i++) {
+      promises.push(
+        api
+          .get('/cardapio/' + dias[i])
+          .then((response) => {
+            if (response.status == 200) {
+              let dia = dias[i];
+
+              if (dia === 'TERCA') dia = 'TERÇA';
+
+              cardapio.push([
+                dias[i],
+                <CardapioDia
+                  dia={dia}
+                  diaMes={pegaData(response.data.data)}
+                  refeicao={response.data.refeicao}
+                  opcao1={response.data.opcao1}
+                  opcao2={response.data.opcao2}
+                  opcao3={response.data.opcao3}
+                  opcao4={response.data.opcao4}
+                  opcao5={response.data.opcao5}
+                />,
+              ]);
+            }
+          })
+          .catch((error) => {})
+      );
+    }
+
+    Promise.all(promises).then(() => {
+      setIsFetched(true);
+    });
   }, []);
 
+  const pegaData = (data) => {
+    let dia = data.split('-')[2];
+    let mes = data.split('-')[1];
+    return dia + '/' + mes;
+  };
+
+  const getCardapio = (dia) => {
+    for (let i = 0; i < cardapio.length; i++) {
+      if (cardapio[i][0] == dia) {
+        return cardapio[i][1];
+      }
+    }
+  };
+
+  if (!isFetched) {
+    return <div>Carregando...</div>;
+  }
   return (
     <Grid
       templateAreas={`"nav header"
               "nav main"`}
       gridTemplateRows={'65px 1fr'}
       gridTemplateColumns={'15% 1fr'}
-      h="100%"
-      gap={1}
-      bg="red.400"
-      padding={1}
+      h="100vh"
+      gap={0.5}
+      bg="gray.700"
+      padding={0.5}
     >
-      <GridItem bg="white" w="100%" area={'nav'} borderRadius="5px">
-        <VStack gap={5}>
-          <Text
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            height="60px"
-            as="i"
-            fontSize="4xl"
-            fontFamily="Baskervville"
-            fontWeight={500}
-            color="#5F0000"
-            pt={3}
-          >
-            TicketRU
-          </Text>
+      <Nav username={username} email={email} />
 
-          <Box
-            w="95%"
-            h="15vh"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <VStack spacing={-1}>
-              <Image src={userIcon} h="30%" w="30%" objectFit="cover" />
-              <Text fontSize="md" color="grey" w="100%" align="center">
-                {username}
-              </Text>
-              <Text fontSize="md" color="grey" w="100%" align="center">
-                {email}
-              </Text>
-            </VStack>
-          </Box>
+      <Header />
 
-          <VStack w="95%">
-            <Box
-              w="100%"
-              h="20vh"
-              borderWidth="5px"
-              borderColor="grey"
-              borderRadius="5px"
-            >
-              <Image
-                src={mapa}
-                h="100%"
-                w="100%"
-                objectFit="cover"
-                borderRadius="5px"
-                _hover={{ cursor: 'pointer' }}
-                onClick={() => {
-                  window.location.href =
-                    'https://www.google.com.br/maps/place/Restaurante+Universit%C3%A1rio+-+UEM/@-23.406851,-51.9470125,15z/data=!4m5!3m4!1s0x94ecd6d298bf5319:0xec0c89cb12c03d91!8m2!3d-23.406851!4d-51.9382578';
-                }}
-              />
-            </Box>
-            <Text fontSize="lg" color="grey" w="100%" align="center">
-              Localização
-            </Text>
-          </VStack>
-
-          <Box w="95%" h="20vh" bg="blue" />
-        </VStack>
-      </GridItem>
-
-      <Header cardapio="red.200" />
-
-      <GridItem bg="white" area={'main'} borderRadius="5px">
+      <GridItem
+        backgroundImage={comidas}
+        backgroundSize="60%"
+        area={'main'}
+        h="100%"
+        overflowY={'auto'}
+      >
         <VStack
           align="stretch"
           alignItems="center"
           justifyContent="center"
-          h="100%"
           padding="10px"
         >
           <Text
             w="100%"
             align="center"
-            bg={'#edb4b2'}
+            bg={'red.400'}
             fontSize="2xl"
             fontWeight={500}
-            color="#5F0000"
+            color="white"
             borderRadius="5px"
             borderWidth="2px"
             borderColor={'#5F0000'}
+            shadow={'0px 2px 5px rgba(40, 0, 0, 0.5)'}
           >
             Cardápio da Semana
           </Text>
-          <CardapioDia />
-          <CardapioDia />
-          <CardapioDia />
-          <CardapioDia />
-          <CardapioDia />
+          {getCardapio(dias[0])}
+          {getCardapio(dias[1])}
+          {getCardapio(dias[2])}
+          {getCardapio(dias[3])}
+          {getCardapio(dias[4])}
         </VStack>
       </GridItem>
     </Grid>
