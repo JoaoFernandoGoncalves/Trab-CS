@@ -2,6 +2,7 @@ import { Login } from './Login';
 import { Cadastro } from './Cadastro';
 import { Cardapio } from './Cardapio';
 import { Tickets } from './Tickets';
+import { Conta } from './Conta';
 
 const routes = [
   {
@@ -19,6 +20,10 @@ const routes = [
   {
     path: '/tickets',
     element: <Tickets />,
+  },
+  {
+    path: '/conta',
+    element: <Conta />,
   },
 ];
 
