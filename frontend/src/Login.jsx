@@ -149,6 +149,23 @@ export function Login() {
                 Cadastre-se.
               </Link>
             </Text>
+
+            <Text
+              fontSize="14px"
+              width="100vh"
+              m={-5}
+              color="grey"
+              textAlign="center"
+              fontWeight={500}
+            >
+              Ou dê uma olhada no{' '}
+              <Link
+                to="/cardapio"
+                style={{ fontWeight: 'bold', textDecoration: 'underline' }}
+              >
+                cardápio da semana.
+              </Link>
+            </Text>
           </Stack>
         </VStack>
       </Box>

@@ -17,8 +17,8 @@ export function Cardapio() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [tickets, setTickets] = useState(0);
   const [cardapio, setCardapio] = useState([]);
-  // const [drawDias, setDrawDias] = useState([]);
   const [isFetched, setIsFetched] = useState(false);
 
   useEffect(() => {
@@ -34,6 +34,7 @@ export function Cardapio() {
           if (response.status == 200) {
             setUsername(response.data.nome);
             setEmail(response.data.email);
+            setTickets(response.data.qtd_tickets);
           }
         })
         .catch((error) => {})
@@ -101,9 +102,16 @@ export function Cardapio() {
       bg="gray.700"
       padding={0.5}
     >
-      <Nav username={username} email={email} />
+      <Nav username={username} email={email} tickets={tickets} />
 
-      <Header />
+      <Header
+        tickets={() => {
+          navigate('/tickets');
+        }}
+        minhaConta={() => {
+          navigate('/conta');
+        }}
+      />
 
       <GridItem
         backgroundImage={comidas}
