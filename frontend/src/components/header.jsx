@@ -2,9 +2,6 @@ import { GridItem, SimpleGrid, Button } from '@chakra-ui/react';
 import { BotaoBonito } from './BotaoBonito';
 
 export function Header(props) {
-  let cardapio = props.cardapio || 'white';
-  let tickets = props.tickets || 'white';
-  let minhaConta = props.minhaConta || 'white';
   return (
     <GridItem area={'header'} bg="white" h="65px">
       <SimpleGrid
@@ -24,7 +21,8 @@ export function Header(props) {
           w="100%"
           fontSize="20px"
           color="red.400"
-          backgroundColor={cardapio}
+          backgroundColor="white"
+          onClick={props.cardapio}
         />
         <BotaoBonito
           title="Tickets"
@@ -32,7 +30,8 @@ export function Header(props) {
           w="100%"
           fontSize="20px"
           color="red.400"
-          backgroundColor={tickets}
+          backgroundColor="white"
+          onClick={props.tickets}
         />
         <BotaoBonito
           title="Minha Conta"
@@ -40,7 +39,8 @@ export function Header(props) {
           w="100%"
           fontSize="20px"
           color="red.400"
-          backgroundColor={minhaConta}
+          backgroundColor="white"
+          onClick={props.minhaConta}
         />
       </SimpleGrid>
     </GridItem>

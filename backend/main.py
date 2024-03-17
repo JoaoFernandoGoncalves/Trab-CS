@@ -266,6 +266,50 @@ async def delete_admin(admin_id: int, db: db_dependency):
     db.commit()
     return None  # Retornar None explicitamente para um código de status 204
 
+@app.post("/cardapio", response_model=CardapioBase)
+def create_item_in_menu(item: CardapioCreate, db: Session = Depends(get_db)):
+    db_item = models.Cardapio(**item.model_dump())
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+@app.put("/cardapio/{item_id}", response_model=CardapioBase)
+def update_item_in_menu(item_id: int, item: CardapioUpdate, db: Session = Depends(get_db)):
+    db_item = db.query(models.Cardapio).filter(models.Cardapio.id == item_id).first()
+    if db_item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    # Verificar quais campos foram alterados e atualizar apenas eles
+    if item.dia_semana != "string":
+        db_item.dia_semana = item.dia_semana
+    if item.data and item.data != str(date.today()):
+        db_item.data = item.data
+    if item.refeicao != "string":
+        db_item.refeicao = item.refeicao
+    if item.opcao1 != "string":
+        db_item.opcao1 = item.opcao1
+    if item.opcao2 != "string":
+        db_item.opcao2 = item.opcao2
+    if item.opcao3 != "string":
+        db_item.opcao3 = item.opcao3
+    if item.opcao4 != "string":
+        db_item.opcao4 = item.opcao4
+    if item.opcao5 != "string":
+        db_item.opcao5 = item.opcao5
+    
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+@app.get("/cardapio/{dia_semana}", status_code=status.HTTP_200_OK)
+def read_menu_item(dia_semana: str, db: Session = Depends(get_db)):
+    item = db.query(models.Cardapio).filter(models.Cardapio.dia_semana == dia_semana).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
 class MetodoPagamento(str, Enum):
     cartao_credito = "cartao_credito"
     cartao_debito = "cartao_debito"
@@ -357,47 +401,13 @@ async def alterar_valor_ticket(novo_valor: float, db: Session = Depends(get_db))
         db.rollback()  # Reverta as alterações no banco de dados em caso de exceção
         raise e
     
-@app.post("/cardapio", response_model=CardapioBase)
-def create_item_in_menu(item: CardapioCreate, db: Session = Depends(get_db)):
-    db_item = models.Cardapio(**item.model_dump())
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
 
-@app.put("/cardapio/{item_id}", response_model=CardapioBase)
-def update_item_in_menu(item_id: int, item: CardapioUpdate, db: Session = Depends(get_db)):
-    db_item = db.query(models.Cardapio).filter(models.Cardapio.id == item_id).first()
-    if db_item is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+@router.get("/valor-ticket", status_code=status.HTTP_200_OK)
+async def get_valor_ticket(db: Session = Depends(get_db)):
+    configuracao = db.query(models.Configuracao).first()
+    if configuracao is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Configuração não encontrada")
+    return configuracao.ticket_valor
     
-    # Verificar quais campos foram alterados e atualizar apenas eles
-    if item.dia_semana != "string":
-        db_item.dia_semana = item.dia_semana
-    if item.data and item.data != str(date.today()):
-        db_item.data = item.data
-    if item.refeicao != "string":
-        db_item.refeicao = item.refeicao
-    if item.opcao1 != "string":
-        db_item.opcao1 = item.opcao1
-    if item.opcao2 != "string":
-        db_item.opcao2 = item.opcao2
-    if item.opcao3 != "string":
-        db_item.opcao3 = item.opcao3
-    if item.opcao4 != "string":
-        db_item.opcao4 = item.opcao4
-    if item.opcao5 != "string":
-        db_item.opcao5 = item.opcao5
-    
-    db.commit()
-    db.refresh(db_item)
-    return db_item
-
-@app.get("/cardapio/{dia_semana}", status_code=status.HTTP_200_OK)
-def read_menu_item(dia_semana: str, db: Session = Depends(get_db)):
-    item = db.query(models.Cardapio).filter(models.Cardapio.dia_semana == dia_semana).first()
-    if item is None:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return item
 
 app.include_router(router)

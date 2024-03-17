@@ -6,7 +6,9 @@ import {
   Image,
   Button,
   StackDivider,
+  Link,
 } from '@chakra-ui/react';
+import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { userIcon, mapa } from '../assets/images';
 import { Logout } from '../assets/logoutIcon';
 
@@ -31,6 +33,7 @@ export function Nav(props) {
           <StackDivider
             borderWidth="2px"
             borderColor="gray.300"
+            borderRadius="5px"
             w="90%"
             alignSelf="center"
           />
@@ -59,12 +62,18 @@ export function Nav(props) {
           justifyContent="center"
         >
           <VStack spacing={-1}>
-            <Image src={userIcon} h="30%" w="30%" objectFit="cover" />
+            <Image src={userIcon} h="25%" w="25%" objectFit="cover" />
             <Text fontSize="md" color="grey" w="100%" align="center">
-              {props.username || 'Usuário não logado'}
-            </Text>
-            <Text fontSize="md" color="grey" w="100%" align="center">
-              {props.email}
+              {props.username ? props.username : 'Usuário não logado'} <br />
+              {props.email ? (
+                props.email
+              ) : (
+                <Link href="/" color="teal.500">
+                  Faça login <ExternalLinkIcon mx="2px" />
+                </Link>
+              )}{' '}
+              <br />
+              {props.tickets ? props.tickets + ' Tickets' : null}
             </Text>
             {botaoSair}
           </VStack>
@@ -94,18 +103,18 @@ export function Nav(props) {
             borderColor="gray.500"
             borderRadius="5px"
           >
-            <Image
-              src={mapa}
-              h="100%"
-              w="100%"
-              objectFit="cover"
-              borderRadius="5px"
-              _hover={{ cursor: 'pointer' }}
-              onClick={() => {
-                window.location.href =
-                  'https://www.google.com.br/maps/place/Restaurante+Universit%C3%A1rio+-+UEM/@-23.406851,-51.9470125,15z/data=!4m5!3m4!1s0x94ecd6d298bf5319:0xec0c89cb12c03d91!8m2!3d-23.406851!4d-51.9382578';
-              }}
-            />
+            <Link
+              href="https://www.google.com.br/maps/place/Restaurante+Universit%C3%A1rio+-+UEM/@-23.406851,-51.9470125,15z/data=!4m5!3m4!1s0x94ecd6d298bf5319:0xec0c89cb12c03d91!8m2!3d-23.406851!4d-51.9382578"
+              isExternal
+            >
+              <Image
+                src={mapa}
+                h="100%"
+                w="100%"
+                objectFit="cover"
+                borderRadius="5px"
+              />
+            </Link>
           </Box>
 
           <Text
