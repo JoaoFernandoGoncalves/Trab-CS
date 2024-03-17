@@ -1,3 +1,3 @@
-Dependências:
-pip install python-jose[cryptography] python-multipart
-pip install fastapi uvicorn pymysql sqlalchemy
+# TicketRU -Trabalho Parte 2 - CONSTRUCAO DE SOFTWARE
+## Dependências:
+### pip install python-jose[cryptography] python-multipart fastapi uvicorn pymysql sqlalchemy
