@@ -8,7 +8,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import { InputLogin } from './components/inputLogin';
+import { InputLogin } from './components/inputLogin.jsx';
 import { uem } from './assets/images';
 import { Link, useNavigate } from 'react-router-dom';
 import api from './api';
