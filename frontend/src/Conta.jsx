@@ -1,51 +1,60 @@
-import { Text, VStack, Grid, GridItem, Box, Image, FormControl, FormLabel, Input, Button } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "./api";
-import "@fontsource/poppins/300.css";
-import "@fontsource/poppins/400.css";
-import "@fontsource/poppins/500.css";
-import "@fontsource/poppins/600.css";
-import "@fontsource/poppins/700.css";
-import { Header } from "./components/header";
-import { Nav } from "./components/nav";
-import { comidas } from "./assets/images";
-import { userIcon } from "./assets/images";
+import {
+  Text,
+  VStack,
+  Grid,
+  GridItem,
+  Box,
+  Image,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+} from '@chakra-ui/react';
+import { useState, useEffect } from 'react';
+import { Form, useNavigate } from 'react-router-dom';
+import api from './api';
+import '@fontsource/poppins/300.css';
+import '@fontsource/poppins/400.css';
+import '@fontsource/poppins/500.css';
+import '@fontsource/poppins/600.css';
+import '@fontsource/poppins/700.css';
+import { Header } from './components/header';
+import { Nav } from './components/nav';
+import { comidas } from './assets/images';
+import { userIcon } from './assets/images';
 
 export function Conta() {
   const navigate = useNavigate();
-  const [userId, setUserId] = useState("");
-  const [curUser, setCurUser] = useState("");
-  const [newUser, setNewUser] = useState("");
-  const [curEmail, setCurEmail] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [curPassword, setCurPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [newPassword2, setNewPassword2] = useState("");
-  const [validatePassword, setValidatePassword] = useState("");
-  const [cpf, setCpf] = useState("");
+  const [userId, setUserId] = useState('');
+  const [curUser, setCurUser] = useState('');
+  const [newUser, setNewUser] = useState('');
+  const [curEmail, setCurEmail] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [curPassword, setCurPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPassword2, setNewPassword2] = useState('');
+  const [validatePassword, setValidatePassword] = useState('');
   const [tickets, setTickets] = useState(0);
-  const [erro, setErro] = useState("");
+  const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
   const [isFetched, setIsFetched] = useState(false);
 
   useEffect(() => {
-    if (!sessionStorage.getItem("access_token")) {
-      navigate("/");
+    if (!sessionStorage.getItem('access_token')) {
+      navigate('/');
     }
 
     let promises = [];
 
     promises.push(
       api
-        .get("/user/loggedin/" + sessionStorage.getItem("access_token"))
+        .get('/user/loggedin/' + sessionStorage.getItem('access_token'))
         .then((response) => {
           if (response.status == 200) {
             setUserId(response.data.id);
             setCurUser(response.data.nome);
             setCurPassword(response.data.senha);
             setCurEmail(response.data.email);
-            setCpf(response.data.cpf);
             setTickets(response.data.qtd_tickets);
           }
         })
@@ -61,28 +70,21 @@ export function Conta() {
     setCarregando(true);
 
     if (validateFields()) {
-      if (newUser === "") setNewUser(curUser);
-      if (newEmail === "") setNewEmail(curEmail);
-      if (newPassword === "") setNewPassword(curPassword);
-
       api
-        .put("/usuario/" + userId, {
+        .put(`/usuario/${userId}`, {
           nome: newUser,
           email: newEmail,
           senha: newPassword,
-          cpf: cpf,
-          qtd_tickets: tickets,
+          cpf: '',
+          qtd_tickets: 0,
         })
         .then((response) => {
           if (response.status === 200) {
-            navigate("/tickets");
+            window.location.reload();
           }
         })
         .catch((error) => {
-          if (error.response) {
-            const msg = error.response.data.detail;
-            setErro(msg);
-          }
+          setErro(error.response.data.detail);
         })
         .finally(() => {
           setCarregando(false);
@@ -90,26 +92,36 @@ export function Conta() {
     } else {
       setCarregando(false);
     }
+
+    setTimeout(() => {
+      setErro('');
+      setInvalid(false);
+    }, 5000);
   };
 
   const validateFields = () => {
-    if (newUser === "" && newEmail === "" && newPassword === "" && newPassword2 === "") {
-      setErro("Preencha pelo menos um dos campos");
+    if (
+      newUser === '' &&
+      newEmail === '' &&
+      newPassword === '' &&
+      newPassword2 === ''
+    ) {
+      setErro('Preencha pelo menos um dos campos');
       return false;
     }
 
     if (newPassword !== newPassword2) {
-      setErro("As senhas não coincidem");
+      setErro('As senhas não coincidem');
       return false;
     }
 
-    if (validatePassword !== "" && newPassword === "") {
-      setErro("Preencha a nova senha");
+    if (validatePassword !== '' && newPassword === '') {
+      setErro('Preencha a nova senha');
       return false;
     }
 
-    if (validatePassword !== "" && curPassword !== validatePassword) {
-      setErro("Senha atual incorreta");
+    if (validatePassword !== '' && curPassword !== validatePassword) {
+      setErro('Senha atual incorreta');
       return false;
     }
 
@@ -123,8 +135,8 @@ export function Conta() {
     <Grid
       templateAreas={`"nav header"
               "nav main"`}
-      gridTemplateRows={"65px 1fr"}
-      gridTemplateColumns={"15% 1fr"}
+      gridTemplateRows={'65px 1fr'}
+      gridTemplateColumns={'15% 1fr'}
       h="100vh"
       gap={0.5}
       bg="gray.700"
@@ -134,10 +146,10 @@ export function Conta() {
 
       <Header
         cardapio={() => {
-          navigate("/cardapio");
+          navigate('/cardapio');
         }}
         tickets={() => {
-          navigate("/tickets");
+          navigate('/tickets');
         }}
       />
 
@@ -148,23 +160,30 @@ export function Conta() {
         pb="10px"
         pl="20%"
         pr="20%"
-        area={"main"}
+        area={'main'}
         h="100%"
         w="100%"
-        overflowY={"auto"}
+        overflowY={'auto'}
       >
         <VStack w="100%" display="flex" spacing={4}>
           <Box
             w="100%"
             align="center"
-            bg={"gray.500"}
+            bg={'gray.500'}
             color="white"
             borderRadius="25px"
             borderWidth="2px"
             borderColor="black"
-            shadow={"0px 2px 5px rgba(40, 0, 0, 0.5)"}
+            shadow={'0px 2px 5px rgba(40, 0, 0, 0.5)'}
           >
-            <Box w="95%" h="100%" display="flex" alignItems="center" justifyContent="center" padding={10}>
+            <Box
+              w="95%"
+              h="100%"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              padding={10}
+            >
               <VStack>
                 <Image src={userIcon} boxSize="15%" objectFit="cover" />
                 <Text fontSize="lg" w="100%" align="center">
@@ -181,12 +200,12 @@ export function Conta() {
           <Box
             h="100%"
             w="100%"
-            bg={"gray.500"}
+            bg={'gray.500'}
             color="white"
             borderRadius="25px"
             borderWidth="2px"
             borderColor="black"
-            shadow={"0px 2px 5px rgba(40, 0, 0, 0.5)"}
+            shadow={'0px 2px 5px rgba(40, 0, 0, 0.5)'}
           >
             <VStack
               display="flex"
@@ -199,15 +218,15 @@ export function Conta() {
             >
               <Text
                 w="100%"
-                bg={"red.400"}
+                bg={'red.400'}
                 align="center"
                 fontSize="2xl"
                 fontWeight={500}
                 color="white"
                 borderRadius="5px"
                 borderWidth="2px"
-                borderColor={"#5F0000"}
-                shadow={"0px 2px 5px rgba(40, 0, 0, 0.5)"}
+                borderColor={'#5F0000'}
+                shadow={'0px 2px 5px rgba(40, 0, 0, 0.5)'}
               >
                 Editar Informações
               </Text>
@@ -222,12 +241,10 @@ export function Conta() {
                   type="user"
                   placeholder="novo usuário"
                   _placeholder={{
-                    color: "white",
+                    color: 'gray.400',
                   }}
                   borderWidth={2}
-                  onChange={(value) => {
-                    setNewUser(value);
-                  }}
+                  onInput={(e) => setNewUser(e.target.value)}
                 />
               </FormControl>
 
@@ -239,12 +256,10 @@ export function Conta() {
                   type="email"
                   placeholder="novo@email.com"
                   _placeholder={{
-                    color: "white",
+                    color: 'gray.400',
                   }}
                   borderWidth={2}
-                  onChange={(value) => {
-                    setNewEmail(value);
-                  }}
+                  onInput={(e) => setNewEmail(e.target.value)}
                 />
               </FormControl>
 
@@ -256,12 +271,10 @@ export function Conta() {
                   type="password"
                   placeholder="senha atual"
                   _placeholder={{
-                    color: "white",
+                    color: 'gray.400',
                   }}
                   borderWidth={2}
-                  onChange={(value) => {
-                    setValidatePassword(value);
-                  }}
+                  onInput={(e) => setValidatePassword(e.target.value)}
                 />
               </FormControl>
 
@@ -273,12 +286,10 @@ export function Conta() {
                   type="password"
                   placeholder="nova senha"
                   _placeholder={{
-                    color: "white",
+                    color: 'gray.400',
                   }}
                   borderWidth={2}
-                  onChange={(value) => {
-                    setNewPassword(value);
-                  }}
+                  onInput={(e) => setNewPassword(e.target.value)}
                 />
               </FormControl>
 
@@ -289,12 +300,10 @@ export function Conta() {
                   type="password"
                   placeholder="digite a senha novamente"
                   _placeholder={{
-                    color: "white",
+                    color: 'gray.400',
                   }}
                   borderWidth={2}
-                  onChange={(value) => {
-                    setNewPassword2(value);
-                  }}
+                  onInput={(e) => setNewPassword2(e.target.value)}
                 />
               </FormControl>
 
@@ -303,7 +312,7 @@ export function Conta() {
                 bg="gray.700"
                 borderRadius={5}
                 width="50%"
-                color={"red.500"}
+                color={'red.500'}
                 textAlign="center"
                 fontWeight={400}
               >

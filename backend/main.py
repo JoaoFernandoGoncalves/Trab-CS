@@ -160,18 +160,18 @@ async def update_user(user_id: int, user_data: UsuarioBase, db: Session = Depend
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado")
     
     # Verificar quais campos foram alterados e atualizar apenas eles
-    if user_data.nome != "string":
+    if user_data.nome != "string" and user_data.nome != "":
         db_user.nome = user_data.nome
-    if user_data.email != "string":
+    if user_data.email != "string" and user_data.email != "":
          if not is_valid_email(user_data.email):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="E-mail inválido")
          else:
             db_user.email = user_data.email
-    if user_data.senha != "string":
+    if user_data.senha != "string" and user_data.senha != "":
         db_user.senha = user_data.senha
-    if user_data.qtd_tickets != "0":
+    if user_data.qtd_tickets != 0:
         db_user.qtd_tickets = user_data.qtd_tickets
-    if user_data.cpf != "string":
+    if user_data.cpf != "string" and user_data.cpf != "":
         if not is_valid_cpf(user_data.cpf):
            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CPF inválido")
         else:
