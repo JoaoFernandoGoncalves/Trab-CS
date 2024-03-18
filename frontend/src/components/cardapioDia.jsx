@@ -30,10 +30,10 @@ export function CardapioDia(props) {
       onLoad={props.onLoad}
     >
       <VStack divider={<StackDivider borderColor="red.400" />}>
-        <Heading fontSize="xl" textTransform="uppercase">
+        <Heading fontSize="xl" textAlign="center" textTransform="uppercase">
           {diaSemana} - {diaMes} - {refeicao}
         </Heading>
-        <List fontSize="lg" align="center" textTransform="uppercase">
+        <List fontSize="lg" textAlign="center" textTransform="uppercase">
           <ListItem>{opcao1}</ListItem>
           <ListItem>{opcao2}</ListItem>
           <ListItem>{opcao3}</ListItem>

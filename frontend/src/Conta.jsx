@@ -1,6 +1,17 @@
-import { Text, VStack, Grid, GridItem, Box, Image } from '@chakra-ui/react';
+import {
+  Text,
+  VStack,
+  Grid,
+  GridItem,
+  Box,
+  Image,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+} from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Form, useNavigate } from 'react-router-dom';
 import api from './api';
 import '@fontsource/poppins/300.css';
 import '@fontsource/poppins/400.css';
@@ -14,9 +25,18 @@ import { userIcon } from './assets/images';
 
 export function Conta() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [userId, setUserId] = useState('');
+  const [curUser, setCurUser] = useState('');
+  const [newUser, setNewUser] = useState('');
+  const [curEmail, setCurEmail] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [curPassword, setCurPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPassword2, setNewPassword2] = useState('');
+  const [validatePassword, setValidatePassword] = useState('');
   const [tickets, setTickets] = useState(0);
+  const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
   const [isFetched, setIsFetched] = useState(false);
 
   useEffect(() => {
@@ -31,8 +51,10 @@ export function Conta() {
         .get('/user/loggedin/' + sessionStorage.getItem('access_token'))
         .then((response) => {
           if (response.status == 200) {
-            setUsername(response.data.nome);
-            setEmail(response.data.email);
+            setUserId(response.data.id);
+            setCurUser(response.data.nome);
+            setCurPassword(response.data.senha);
+            setCurEmail(response.data.email);
             setTickets(response.data.qtd_tickets);
           }
         })
@@ -43,6 +65,68 @@ export function Conta() {
       setIsFetched(true);
     });
   }, []);
+
+  const handleClick = () => {
+    setCarregando(true);
+
+    if (validateFields()) {
+      api
+        .put(`/usuario/${userId}`, {
+          nome: newUser,
+          email: newEmail,
+          senha: newPassword,
+          cpf: '',
+          qtd_tickets: 0,
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            window.location.reload();
+          }
+        })
+        .catch((error) => {
+          setErro(error.response.data.detail);
+        })
+        .finally(() => {
+          setCarregando(false);
+        });
+    } else {
+      setCarregando(false);
+    }
+
+    setTimeout(() => {
+      setErro('');
+      setInvalid(false);
+    }, 5000);
+  };
+
+  const validateFields = () => {
+    if (
+      newUser === '' &&
+      newEmail === '' &&
+      newPassword === '' &&
+      newPassword2 === ''
+    ) {
+      setErro('Preencha pelo menos um dos campos');
+      return false;
+    }
+
+    if (newPassword !== newPassword2) {
+      setErro('As senhas não coincidem');
+      return false;
+    }
+
+    if (validatePassword !== '' && newPassword === '') {
+      setErro('Preencha a nova senha');
+      return false;
+    }
+
+    if (validatePassword !== '' && curPassword !== validatePassword) {
+      setErro('Senha atual incorreta');
+      return false;
+    }
+
+    return true;
+  };
 
   if (!isFetched) {
     return <div>Carregando...</div>;
@@ -58,7 +142,7 @@ export function Conta() {
       bg="gray.700"
       padding={0.5}
     >
-      <Nav username={username} email={email} tickets={tickets} />
+      <Nav username={curUser} email={curEmail} tickets={tickets} />
 
       <Header
         cardapio={() => {
@@ -103,9 +187,9 @@ export function Conta() {
               <VStack>
                 <Image src={userIcon} boxSize="15%" objectFit="cover" />
                 <Text fontSize="lg" w="100%" align="center">
-                  {username}
+                  {curUser}
                   <br />
-                  {email}
+                  {curEmail}
                   <br />
                   {tickets} Tickets
                 </Text>
@@ -130,6 +214,7 @@ export function Conta() {
               justifyItems="center"
               w="100%"
               padding={5}
+              spacing={4}
             >
               <Text
                 w="100%"
@@ -145,6 +230,106 @@ export function Conta() {
               >
                 Editar Informações
               </Text>
+
+              <Text>Preencha os campos das informações que deseja alterar</Text>
+
+              <FormControl w="40%">
+                <FormLabel>Nome de Usuário:</FormLabel>
+                <Input
+                  focusBorderColor="blue.200"
+                  variant="outline"
+                  type="user"
+                  placeholder="novo usuário"
+                  _placeholder={{
+                    color: 'gray.400',
+                  }}
+                  borderWidth={2}
+                  onInput={(e) => setNewUser(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl w="40%">
+                <FormLabel>Endereço de Email:</FormLabel>
+                <Input
+                  focusBorderColor="blue.200"
+                  variant="outline"
+                  type="email"
+                  placeholder="novo@email.com"
+                  _placeholder={{
+                    color: 'gray.400',
+                  }}
+                  borderWidth={2}
+                  onInput={(e) => setNewEmail(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl w="40%">
+                <FormLabel>Senha Atual:</FormLabel>
+                <Input
+                  focusBorderColor="blue.200"
+                  variant="outline"
+                  type="password"
+                  placeholder="senha atual"
+                  _placeholder={{
+                    color: 'gray.400',
+                  }}
+                  borderWidth={2}
+                  onInput={(e) => setValidatePassword(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl w="40%">
+                <FormLabel>Nova Senha:</FormLabel>
+                <Input
+                  focusBorderColor="blue.200"
+                  variant="outline"
+                  type="password"
+                  placeholder="nova senha"
+                  _placeholder={{
+                    color: 'gray.400',
+                  }}
+                  borderWidth={2}
+                  onInput={(e) => setNewPassword(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl w="40%">
+                <Input
+                  focusBorderColor="blue.200"
+                  variant="outline"
+                  type="password"
+                  placeholder="digite a senha novamente"
+                  _placeholder={{
+                    color: 'gray.400',
+                  }}
+                  borderWidth={2}
+                  onInput={(e) => setNewPassword2(e.target.value)}
+                />
+              </FormControl>
+
+              <Text
+                fontSize="md"
+                bg="gray.700"
+                borderRadius={5}
+                width="50%"
+                color={'red.500'}
+                textAlign="center"
+                fontWeight={400}
+              >
+                {erro}
+              </Text>
+
+              <Button
+                m={4}
+                size="lg"
+                colorScheme="green"
+                borderWidth="2px"
+                borderColor="green.700"
+                isLoading={carregando}
+                onClick={handleClick}
+              >
+                Confirmar Alterações
+              </Button>
             </VStack>
           </Box>
         </VStack>

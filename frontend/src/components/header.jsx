@@ -1,5 +1,5 @@
 import { GridItem, SimpleGrid, Button } from '@chakra-ui/react';
-import { BotaoBonito } from './BotaoBonito';
+import { BotaoBonito } from './botaoBonito.jsx';
 
 export function Header(props) {
   return (
